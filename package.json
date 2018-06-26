@@ -1,0 +1,13 @@
+{
+  "name": "closure-compiler-graal",
+  "version": "20180610.0.0",
+  "description": "Native image distribution of closure-compiler",
+  "main": "index.js",
+  "repository": "git@github.com:chadkillingsworth/closure-compiler-graal.git",
+  "author": "Chad Killingsworth <chadkillingsworth@gmail.com>",
+  "license": "Apache-2.0",
+  "private": false,
+  "devDependencies": {
+    "semver": "^5.5.0"
+  }
+}
