@@ -29,7 +29,7 @@ env:
     - JDK8_UPDATE_VERSION="172"
 
 before_install:
-  - if [ $TRAVIS_OS_NAME = osx ]; then brew install yarn; fi
+  - if [ $TRAVIS_OS_NAME = osx ]; then brew install yarn; gem update --system; fi
 
 install:
   - |
