@@ -1,7 +1,7 @@
 # closure-compiler-graal
 Public distribution of closure compiler native images
 
-[![Build Status](https://travis-ci.org/chadkillingsworth/closure-compiler-graal.svg?branch=master)](https://travis-ci.org/google/closure-compiler-graal)
+[![Build Status](https://travis-ci.org/ChadKillingsworth/closure-compiler-graal.svg?branch=master)](https://travis-ci.org/ChadKillingsworth/closure-compiler-graal)
 
 Includes both of the following packages:
 
