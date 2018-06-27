@@ -6,7 +6,13 @@
   "repository": "git@github.com:chadkillingsworth/closure-compiler-graal.git",
   "author": "Chad Killingsworth <chadkillingsworth@gmail.com>",
   "license": "Apache-2.0",
-  "private": false,
+  "private": true,
+  "files": [
+    "compiler",
+    "index.js",
+    "package.json",
+    "README.md"
+  ],
   "devDependencies": {
     "semver": "^5.5.0"
   }

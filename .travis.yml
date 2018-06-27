@@ -85,5 +85,18 @@ script:
   - ./compiler --version
   - ./compiler --help
   - echo "console.log('hello');" | ./compiler
+
 after_failure:
   - cat hs_err*
+
+before_deploy:
+  - node prepare-publish.js
+
+deploy:
+  skip_cleanup: true
+  provider: npm
+  email: chadkillingsworth@gmail.com
+  api_key:
+    secure: k6f0xABAS/y4Gx9gKATPQ4y1zXlGV9tRwwU69VOUkMWa78h8aFGRYDHrORsY8PJ3KCbfpEIKy3xEduLEKqMh+dX3EqYpUKqyDt+lBk0VKF5nBtDoKiezGPqr/wuiQl9lHhrFcMjQPV17Tzzn3ieRNQFpeYQF3w5usm0MZHm3sg6It7V0b1Rgtd4GLqltLomSXmgcXJofSgoMP35fzgAKIwfWE1E6qvQtQGvigApLvJTIqGShHKxsNTbWLQwCw6Xk3aT60140gD+dsLgGPbMcSNtIQL7di6XC+LpVG5bgVVe6ad08I99+g1zKyfRcY5yrbW+ZXnxfs20PgwVx1Sxyn/CtavdpdvBpVvys8HVvTdkbPCbb82tnxc8Cj3HuScdldHdUN+RmAe8vC34xPiJMohrTbE/C2eQAXD6aD0eXFHi5v+OuJOkIpCrlMGetnmKZPlWWeEjFwSr1bOHlV41LxGnPC4+GJiAq2Pm0rlQvFg7uFT9ErQ6SIObtoa60JH9sGi2719MbFk0O7CvC4UMnlPc5vKUJlr8GccR7fKhD2Vq5Jqf7fAAe3eW4V7bjHGvr4UmXGuBAUA77OqgQtAhXyynEBJQ7zxhTh9ro0K1ePcPNs7ARNnnvY8UN0twUeDNJG1529NENnFlOLQKa7wHx3inusS9EWs9sUP2E92YIMYA=
+  on:
+    repo: ChadKillingsworth/closure-compiler-graal
