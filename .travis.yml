@@ -9,7 +9,7 @@ addons:
     - wget
     - mercurial
 git:
-  submodules_depth: 10
+  submodules_depth: false
 cache:
   directories:
   - "${TRAVIS_BUILD_DIR}/../jvmci-8"
