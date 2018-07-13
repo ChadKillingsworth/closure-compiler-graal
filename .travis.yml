@@ -8,8 +8,6 @@ addons:
     - python-virtualenv
     - wget
     - mercurial
-git:
-  submodules_depth: false
 cache:
   directories:
   - "${TRAVIS_BUILD_DIR}/../jvmci-8"
