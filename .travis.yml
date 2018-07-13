@@ -1,102 +1,92 @@
 language: java
 python:
-  - "2.7"
+- '2.7'
 addons:
   apt:
     packages:
-      - python-pip
-      - python-virtualenv
-      - wget
-      - mercurial
-
+    - python-pip
+    - python-virtualenv
+    - wget
+    - mercurial
 git:
   submodules_depth: 10
 cache:
-    directories:
-     - ${TRAVIS_BUILD_DIR}/../jvmci-8
-
-# Use Trusty to get enough RAM
+  directories:
+  - "${TRAVIS_BUILD_DIR}/../jvmci-8"
 sudo: required
 dist: trusty
-
-os: 
-  - linux
-  - osx
-
+os:
+- linux
+- osx
 env:
   global:
-    - JVMCI_VERSION="jvmci-0.44"
-    - JDK8_UPDATE_VERSION="172"
-
+  - JVMCI_VERSION="jvmci-0.44"
+  - JDK8_UPDATE_VERSION="172"
 before_install:
-  - if [ $TRAVIS_OS_NAME = osx ]; then brew install yarn; gem update --system; fi
-
+- if [ $TRAVIS_OS_NAME = osx ]; then brew install yarn; gem update --system; fi
 install:
-  - |
-      yarn install
-      node ./download-jar.js
-  - |
-      export MX_PATH=${TRAVIS_BUILD_DIR}/../mx
-      git clone https://github.com/graalvm/mx.git ${MX_PATH}
-      export PATH=${PATH}:${MX_PATH}
-  - |
-      export JVMCI_JAVA=${TRAVIS_BUILD_DIR}/../jvmci-8/bin/java
-      if [ ! -f "$JVMCI_JAVA" ]; then
-        if [ $TRAVIS_OS_NAME = osx ]; then
-          brew tap caskroom/versions;
-          brew cask install java8;
-          export JAVA_HOME=/Library/Java/JavaVirtualMachines/$(ls -l1 /Library/Java/JavaVirtualMachines | tail -1)/Contents/Home;
-          git clone --depth=3 https://github.com/graalvm/graal-jvmci-8.git ../graal-jvmci-8;
-          cd ../graal-jvmci-8;
-          git checkout e0748378a6ee05d69da165a91690503becc8da06;
-          mx build;
-          if [ -d "${TRAVIS_BUILD_DIR}/../jvmci-8" ]; then rm -rf ${TRAVIS_BUILD_DIR}/../jvmci-8; fi
-          cp -R ${TRAVIS_BUILD_DIR}/../graal-jvmci-8/jdk1.8.0_172/darwin-amd64/product/Contents/Home ${TRAVIS_BUILD_DIR}/../jvmci-8;
-          cd ${TRAVIS_BUILD_DIR};
-        else
-          JDK_TAR=${TRAVIS_BUILD_DIR}/../jdk.tar.gz;
-          wget https://github.com/graalvm/openjdk8-jvmci-builder/releases/download/${JVMCI_VERSION}/openjdk-8u${JDK8_UPDATE_VERSION}-${JVMCI_VERSION}-linux-amd64.tar.gz -O ${JDK_TAR};
-          tar -C ${TRAVIS_BUILD_DIR}/.. -xzf ${JDK_TAR};
-          if [ -d "${TRAVIS_BUILD_DIR}/../jvmci-8" ]; then rm -rf ${TRAVIS_BUILD_DIR}/../jvmci-8; fi
-          cp -R ${TRAVIS_BUILD_DIR}/../openjdk1.8.0_${JDK8_UPDATE_VERSION}-${JVMCI_VERSION} ${TRAVIS_BUILD_DIR}/../jvmci-8;
-        fi
-      fi
-      export JAVA_HOME=${TRAVIS_BUILD_DIR}/../jvmci-8
-      export EXTRA_JAVA_HOMES=${JAVA_HOME} # JDK8 must be placed in EXTRA_JAVA_HOME
-
+- |
+  yarn install
+  node ./download-jar.js
+- |
+  export MX_PATH=${TRAVIS_BUILD_DIR}/../mx
+  git clone https://github.com/graalvm/mx.git ${MX_PATH}
+  export PATH=${PATH}:${MX_PATH}
+- |
+  export JVMCI_JAVA=${TRAVIS_BUILD_DIR}/../jvmci-8/bin/java
+  if [ ! -f "$JVMCI_JAVA" ]; then
+    if [ $TRAVIS_OS_NAME = osx ]; then
+      brew tap caskroom/versions;
+      brew cask install java8;
+      export JAVA_HOME=/Library/Java/JavaVirtualMachines/$(ls -l1 /Library/Java/JavaVirtualMachines | tail -1)/Contents/Home;
+      git clone --depth=3 https://github.com/graalvm/graal-jvmci-8.git ../graal-jvmci-8;
+      cd ../graal-jvmci-8;
+      git checkout e0748378a6ee05d69da165a91690503becc8da06;
+      mx build;
+      if [ -d "${TRAVIS_BUILD_DIR}/../jvmci-8" ]; then rm -rf ${TRAVIS_BUILD_DIR}/../jvmci-8; fi
+      cp -R ${TRAVIS_BUILD_DIR}/../graal-jvmci-8/jdk1.8.0_172/darwin-amd64/product/Contents/Home ${TRAVIS_BUILD_DIR}/../jvmci-8;
+      cd ${TRAVIS_BUILD_DIR};
+    else
+      JDK_TAR=${TRAVIS_BUILD_DIR}/../jdk.tar.gz;
+      wget https://github.com/graalvm/openjdk8-jvmci-builder/releases/download/${JVMCI_VERSION}/openjdk-8u${JDK8_UPDATE_VERSION}-${JVMCI_VERSION}-linux-amd64.tar.gz -O ${JDK_TAR};
+      tar -C ${TRAVIS_BUILD_DIR}/.. -xzf ${JDK_TAR};
+      if [ -d "${TRAVIS_BUILD_DIR}/../jvmci-8" ]; then rm -rf ${TRAVIS_BUILD_DIR}/../jvmci-8; fi
+      cp -R ${TRAVIS_BUILD_DIR}/../openjdk1.8.0_${JDK8_UPDATE_VERSION}-${JVMCI_VERSION} ${TRAVIS_BUILD_DIR}/../jvmci-8;
+    fi
+  fi
+  export JAVA_HOME=${TRAVIS_BUILD_DIR}/../jvmci-8
+  export EXTRA_JAVA_HOMES=${JAVA_HOME} # JDK8 must be placed in EXTRA_JAVA_HOME
 script:
-  - echo ${JAVA_HOME}
-  - echo ${EXTRA_JAVA_HOMES}
-  - ${JAVA_HOME}/bin/java -version
-  - cd ${TRAVIS_BUILD_DIR}/graal && mx -v --primary-suite-path substratevm build
-  - |
-      cd ${TRAVIS_BUILD_DIR}/graal/substratevm
-      mx -v native-image -H:+JNI --no-server \
-        -H:+ReportUnsupportedElementsAtRuntime \
-        -H:IncludeResourceBundles=com.google.javascript.rhino.Messages \
-        -H:IncludeResourceBundles=org.kohsuke.args4j.Messages \
-        -H:IncludeResourceBundles=org.kohsuke.args4j.spi.Messages \
-        -H:IncludeResourceBundles=com.google.javascript.jscomp.parsing.ParserConfig \
-        -H:ReflectionConfigurationFiles=${TRAVIS_BUILD_DIR}/reflection-config.json \
-        -H:IncludeResources='(externs.zip)|(.*(js|txt))' \
-        -jar ${TRAVIS_BUILD_DIR}/compiler.jar
-  - mv ${TRAVIS_BUILD_DIR}/graal/substratevm/compiler ${TRAVIS_BUILD_DIR}/compiler
-  - cd ${TRAVIS_BUILD_DIR}
-  - ./compiler --version
-  - ./compiler --help
-  - echo "console.log('hello');" | ./compiler
-
+- echo ${JAVA_HOME}
+- echo ${EXTRA_JAVA_HOMES}
+- "${JAVA_HOME}/bin/java -version"
+- cd ${TRAVIS_BUILD_DIR}/graal && mx -v --primary-suite-path substratevm build
+- |
+  cd ${TRAVIS_BUILD_DIR}/graal/substratevm
+  mx -v native-image -H:+JNI --no-server \
+    -H:+ReportUnsupportedElementsAtRuntime \
+    -H:IncludeResourceBundles=com.google.javascript.rhino.Messages \
+    -H:IncludeResourceBundles=org.kohsuke.args4j.Messages \
+    -H:IncludeResourceBundles=org.kohsuke.args4j.spi.Messages \
+    -H:IncludeResourceBundles=com.google.javascript.jscomp.parsing.ParserConfig \
+    -H:ReflectionConfigurationFiles=${TRAVIS_BUILD_DIR}/reflection-config.json \
+    -H:IncludeResources='(externs.zip)|(.*(js|txt))' \
+    -jar ${TRAVIS_BUILD_DIR}/compiler.jar
+- mv ${TRAVIS_BUILD_DIR}/graal/substratevm/compiler ${TRAVIS_BUILD_DIR}/compiler
+- cd ${TRAVIS_BUILD_DIR}
+- "./compiler --version"
+- "./compiler --help"
+- echo "console.log('hello');" | ./compiler
 after_failure:
-  - cat hs_err*
-
+- cat hs_err*
 before_deploy:
-  - node prepare-publish.js
-
+- node prepare-publish.js
 deploy:
   skip_cleanup: true
   provider: npm
   email: chadkillingsworth@gmail.com
-  api_key:
-    secure: k6f0xABAS/y4Gx9gKATPQ4y1zXlGV9tRwwU69VOUkMWa78h8aFGRYDHrORsY8PJ3KCbfpEIKy3xEduLEKqMh+dX3EqYpUKqyDt+lBk0VKF5nBtDoKiezGPqr/wuiQl9lHhrFcMjQPV17Tzzn3ieRNQFpeYQF3w5usm0MZHm3sg6It7V0b1Rgtd4GLqltLomSXmgcXJofSgoMP35fzgAKIwfWE1E6qvQtQGvigApLvJTIqGShHKxsNTbWLQwCw6Xk3aT60140gD+dsLgGPbMcSNtIQL7di6XC+LpVG5bgVVe6ad08I99+g1zKyfRcY5yrbW+ZXnxfs20PgwVx1Sxyn/CtavdpdvBpVvys8HVvTdkbPCbb82tnxc8Cj3HuScdldHdUN+RmAe8vC34xPiJMohrTbE/C2eQAXD6aD0eXFHi5v+OuJOkIpCrlMGetnmKZPlWWeEjFwSr1bOHlV41LxGnPC4+GJiAq2Pm0rlQvFg7uFT9ErQ6SIObtoa60JH9sGi2719MbFk0O7CvC4UMnlPc5vKUJlr8GccR7fKhD2Vq5Jqf7fAAe3eW4V7bjHGvr4UmXGuBAUA77OqgQtAhXyynEBJQ7zxhTh9ro0K1ePcPNs7ARNnnvY8UN0twUeDNJG1529NENnFlOLQKa7wHx3inusS9EWs9sUP2E92YIMYA=
   on:
     repo: ChadKillingsworth/closure-compiler-graal
+    branch: master
+  api_key:
+    secure: LkXlXGXx5QtGrhprPDlJw1pa6cydNZlxZPWs8zotSK9hHl1q7MJK8GnJKsUfJG3Vmuf0sJw+T88dUbtnOSxmrhv1w34AO6sDcq6eyuZxIJ7/aSqss2ovulrGyTqLU3c8ms3FgPCUgrnDroYCJuPqZ/vQJXHUBXcNOisKAwUtD3Uwusqs9JM7J3kzTFRTjHFQAdIWF20Ui/uu8Csn4Evwub5y9PTZUD6HUrmNHaXDfSwdl+ClwbhXfsgy8BJhHN1krwhOv9+xwk9GoEbstRYUxdVl6e0Yx3H4JpV+1H7OFmMttY2qqB6IKXb8CUeVYxFCGmASE/FJPfnFd4wsmt4yfm3b/73EIze29caz+abcftMz6Q5zGsN40rKH8MlQscmXwTMtYCuImDlTrjdFCwiL0brJ890IUmyou+TKY9n96YnqkO6b5IQV0trRSEQ7izlaEjNiZmVie4D+d2whsvj8ePVLRitf/t1m0AGEcz1Cb8WjSmG8p3Zvw5hwoA4XlUt+v1zpaTbo7EWFOecXSaLwOtvW+X5NVCZPVB5QCNPQNqSM3nb7WUG3u8/zcdO/yBT9pOKCMHQnqMsE65UYxKK/fUWiCsuORBAjFaHYhCowxl6COytjxNy2vr8bG1VWsKwwd/FqunpEk3UPIAH2MYEQbCXVBKosomQmuq4I+2g7lcM=
