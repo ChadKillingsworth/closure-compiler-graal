@@ -32,7 +32,6 @@ install:
   export PATH=${PATH}:${MX_PATH}
 - |
   export JVMCI_JAVA=${TRAVIS_BUILD_DIR}/../jvmci-8/bin/java
-  rm -rf ${JVMCI_JAVA}
   if [ ! -f "$JVMCI_JAVA" ]; then
     if [ $TRAVIS_OS_NAME = osx ]; then
       brew tap caskroom/versions;
@@ -40,8 +39,8 @@ install:
       export JAVA_HOME=/Library/Java/JavaVirtualMachines/$(ls -l1 /Library/Java/JavaVirtualMachines | tail -1)/Contents/Home;
       git clone https://github.com/graalvm/graal-jvmci-8.git ../graal-jvmci-8;
       cd ../graal-jvmci-8;
-      git checkout e0748378a6ee05d69da165a91690503becc8da06;
       mx build;
+      ls -las;
       if [ -d "${TRAVIS_BUILD_DIR}/../jvmci-8" ]; then rm -rf ${TRAVIS_BUILD_DIR}/../jvmci-8; fi
       cp -R ${TRAVIS_BUILD_DIR}/../graal-jvmci-8/jdk1.8.0_*/darwin-amd64/product/Contents/Home ${TRAVIS_BUILD_DIR}/../jvmci-8;
       cd ${TRAVIS_BUILD_DIR};
