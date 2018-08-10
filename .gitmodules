@@ -1,3 +1,0 @@
-[submodule "graal"]
-	path = graal
-	url = https://github.com/oracle/graal.git
