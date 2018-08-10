@@ -43,7 +43,7 @@ install:
       git checkout e0748378a6ee05d69da165a91690503becc8da06;
       mx build;
       if [ -d "${TRAVIS_BUILD_DIR}/../jvmci-8" ]; then rm -rf ${TRAVIS_BUILD_DIR}/../jvmci-8; fi
-      cp -R ${TRAVIS_BUILD_DIR}/../graal-jvmci-8/jdk1.8.0_181/darwin-amd64/product/Contents/Home ${TRAVIS_BUILD_DIR}/../jvmci-8;
+      cp -R ${TRAVIS_BUILD_DIR}/../graal-jvmci-8/jdk1.8.0_*/darwin-amd64/product/Contents/Home ${TRAVIS_BUILD_DIR}/../jvmci-8;
       cd ${TRAVIS_BUILD_DIR};
     else
       JDK_TAR=${TRAVIS_BUILD_DIR}/../jdk.tar.gz;
