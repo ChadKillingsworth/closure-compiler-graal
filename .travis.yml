@@ -32,6 +32,7 @@ install:
   export PATH=${PATH}:${MX_PATH}
 - |
   export JVMCI_JAVA=${TRAVIS_BUILD_DIR}/../jvmci-8/bin/java
+  rm -rf ${JVMCI_JAVA}
   if [ ! -f "$JVMCI_JAVA" ]; then
     if [ $TRAVIS_OS_NAME = osx ]; then
       brew tap caskroom/versions;
