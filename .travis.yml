@@ -37,7 +37,7 @@ install:
       brew tap caskroom/versions;
       brew cask install java8;
       export JAVA_HOME=/Library/Java/JavaVirtualMachines/$(ls -l1 /Library/Java/JavaVirtualMachines | tail -1)/Contents/Home;
-      git clone --depth=3 https://github.com/graalvm/graal-jvmci-8.git ../graal-jvmci-8;
+      git clone https://github.com/graalvm/graal-jvmci-8.git ../graal-jvmci-8;
       cd ../graal-jvmci-8;
       git checkout e0748378a6ee05d69da165a91690503becc8da06;
       mx build;
