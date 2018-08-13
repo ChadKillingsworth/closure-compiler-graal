@@ -8,9 +8,6 @@ addons:
     - python-virtualenv
     - wget
     - mercurial
-cache:
-  directories:
-  - "${TRAVIS_BUILD_DIR}/../jvmci-8"
 sudo: required
 dist: trusty
 os:
@@ -18,7 +15,7 @@ os:
 - osx
 env:
   global:
-  - JVMCI_VERSION="jvmci-0.44"
+  - JVMCI_VERSION="jvmci-0.46"
   - JDK8_UPDATE_VERSION="172"
 before_install:
 - if [ $TRAVIS_OS_NAME = osx ]; then brew install yarn; gem update --system; fi
@@ -32,26 +29,23 @@ install:
   export PATH=${PATH}:${MX_PATH}
 - |
   export JVMCI_JAVA=${TRAVIS_BUILD_DIR}/../jvmci-8/bin/java
-  rm -rf ${JVMCI_JAVA}
-  if [ ! -f "$JVMCI_JAVA" ]; then
-    if [ $TRAVIS_OS_NAME = osx ]; then
-      brew tap caskroom/versions;
-      brew cask install java8;
-      export JAVA_HOME=/Library/Java/JavaVirtualMachines/$(ls -l1 /Library/Java/JavaVirtualMachines | tail -1)/Contents/Home;
-      git clone https://github.com/graalvm/graal-jvmci-8.git ../graal-jvmci-8;
-      cd ../graal-jvmci-8;
-      git checkout e0748378a6ee05d69da165a91690503becc8da06;
-      mx build;
-      if [ -d "${TRAVIS_BUILD_DIR}/../jvmci-8" ]; then rm -rf ${TRAVIS_BUILD_DIR}/../jvmci-8; fi
-      cp -R ${TRAVIS_BUILD_DIR}/../graal-jvmci-8/jdk1.8.0_*/darwin-amd64/product/Contents/Home ${TRAVIS_BUILD_DIR}/../jvmci-8;
-      cd ${TRAVIS_BUILD_DIR};
-    else
-      JDK_TAR=${TRAVIS_BUILD_DIR}/../jdk.tar.gz;
-      wget https://github.com/graalvm/openjdk8-jvmci-builder/releases/download/${JVMCI_VERSION}/openjdk-8u${JDK8_UPDATE_VERSION}-${JVMCI_VERSION}-linux-amd64.tar.gz -O ${JDK_TAR};
-      tar -C ${TRAVIS_BUILD_DIR}/.. -xzf ${JDK_TAR};
-      if [ -d "${TRAVIS_BUILD_DIR}/../jvmci-8" ]; then rm -rf ${TRAVIS_BUILD_DIR}/../jvmci-8; fi
-      cp -R ${TRAVIS_BUILD_DIR}/../openjdk1.8.0_${JDK8_UPDATE_VERSION}-${JVMCI_VERSION} ${TRAVIS_BUILD_DIR}/../jvmci-8;
-    fi
+  if [ $TRAVIS_OS_NAME = osx ]; then
+    brew tap caskroom/versions;
+    brew cask install java8;
+    export JAVA_HOME=/Library/Java/JavaVirtualMachines/$(ls -l1 /Library/Java/JavaVirtualMachines | tail -1)/Contents/Home;
+    git clone https://github.com/graalvm/graal-jvmci-8.git ../graal-jvmci-8;
+    cd ../graal-jvmci-8;
+    git checkout ${JVMCI_VERSION};
+    mx build;
+    if [ -d "${TRAVIS_BUILD_DIR}/../jvmci-8" ]; then rm -rf ${TRAVIS_BUILD_DIR}/../jvmci-8; fi
+    cp -R ${TRAVIS_BUILD_DIR}/../graal-jvmci-8/jdk1.8.0_*/darwin-amd64/product/Contents/Home ${TRAVIS_BUILD_DIR}/../jvmci-8;
+    cd ${TRAVIS_BUILD_DIR};
+  else
+    JDK_TAR=${TRAVIS_BUILD_DIR}/../jdk.tar.gz;
+    wget https://github.com/graalvm/openjdk8-jvmci-builder/releases/download/${JVMCI_VERSION}/openjdk-8u${JDK8_UPDATE_VERSION}-${JVMCI_VERSION}-linux-amd64.tar.gz -O ${JDK_TAR};
+    tar -C ${TRAVIS_BUILD_DIR}/.. -xzf ${JDK_TAR};
+    if [ -d "${TRAVIS_BUILD_DIR}/../jvmci-8" ]; then rm -rf ${TRAVIS_BUILD_DIR}/../jvmci-8; fi
+    cp -R ${TRAVIS_BUILD_DIR}/../openjdk1.8.0_${JDK8_UPDATE_VERSION}-${JVMCI_VERSION} ${TRAVIS_BUILD_DIR}/../jvmci-8;
   fi
   export JAVA_HOME=${TRAVIS_BUILD_DIR}/../jvmci-8
   export EXTRA_JAVA_HOMES=${JAVA_HOME} # JDK8 must be placed in EXTRA_JAVA_HOME
