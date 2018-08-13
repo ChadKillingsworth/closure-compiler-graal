@@ -67,9 +67,9 @@ script:
     -jar ${TRAVIS_BUILD_DIR}/compiler.jar
 - mv ${TRAVIS_BUILD_DIR}/graal/substratevm/compiler ${TRAVIS_BUILD_DIR}/compiler
 - cd ${TRAVIS_BUILD_DIR}
-- "./compiler --version"
-- "./compiler --help"
-- echo "console.log('hello');" | ./compiler
+- ./compiler --version | grep 'Version:'
+- ./compiler --help | grep 'Basic Usage:'
+- echo "console.log('hello');" | ./compiler | grep 'console.log'
 after_failure:
 - cat hs_err*
 before_deploy:
