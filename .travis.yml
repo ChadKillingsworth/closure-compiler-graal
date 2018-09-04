@@ -1,16 +1,4 @@
 language: java
-python:
-- '2.7'
-addons:
-  apt:
-    packages:
-    - python-pip
-    - python-virtualenv
-    - wget
-    - mercurial
-cache:
-  directories:
-  - "${TRAVIS_BUILD_DIR}/../jvmci-8"
 sudo: required
 dist: trusty
 os:
@@ -18,66 +6,32 @@ os:
 - osx
 env:
   global:
-  - JVMCI_VERSION="jvmci-0.44"
-  - JDK8_UPDATE_VERSION="172"
+  - GRAAL_VERSION="1.0.0-rc6"
 before_install:
-- if [ $TRAVIS_OS_NAME = osx ]; then brew install yarn; gem update --system; fi
+- if [ $TRAVIS_OS_NAME = osx ]; then brew install yarn; gem update --system; export GRAAL_OS=macos; else export GRAAL_OS=${TRAVIS_OS_NAME}; fi
 install:
-- |
-  yarn install
-  node ./download-jar.js
-- |
-  export MX_PATH=${TRAVIS_BUILD_DIR}/../mx
-  git clone https://github.com/graalvm/mx.git ${MX_PATH}
-  export PATH=${PATH}:${MX_PATH}
-- |
-  export JVMCI_JAVA=${TRAVIS_BUILD_DIR}/../jvmci-8/bin/java
-  rm -rf ${JVMCI_JAVA}
-  if [ ! -f "$JVMCI_JAVA" ]; then
-    if [ $TRAVIS_OS_NAME = osx ]; then
-      brew tap caskroom/versions;
-      brew cask install java8;
-      export JAVA_HOME=/Library/Java/JavaVirtualMachines/$(ls -l1 /Library/Java/JavaVirtualMachines | tail -1)/Contents/Home;
-      git clone https://github.com/graalvm/graal-jvmci-8.git ../graal-jvmci-8;
-      cd ../graal-jvmci-8;
-      git checkout e0748378a6ee05d69da165a91690503becc8da06;
-      mx build;
-      if [ -d "${TRAVIS_BUILD_DIR}/../jvmci-8" ]; then rm -rf ${TRAVIS_BUILD_DIR}/../jvmci-8; fi
-      cp -R ${TRAVIS_BUILD_DIR}/../graal-jvmci-8/jdk1.8.0_*/darwin-amd64/product/Contents/Home ${TRAVIS_BUILD_DIR}/../jvmci-8;
-      cd ${TRAVIS_BUILD_DIR};
-    else
-      JDK_TAR=${TRAVIS_BUILD_DIR}/../jdk.tar.gz;
-      wget https://github.com/graalvm/openjdk8-jvmci-builder/releases/download/${JVMCI_VERSION}/openjdk-8u${JDK8_UPDATE_VERSION}-${JVMCI_VERSION}-linux-amd64.tar.gz -O ${JDK_TAR};
-      tar -C ${TRAVIS_BUILD_DIR}/.. -xzf ${JDK_TAR};
-      if [ -d "${TRAVIS_BUILD_DIR}/../jvmci-8" ]; then rm -rf ${TRAVIS_BUILD_DIR}/../jvmci-8; fi
-      cp -R ${TRAVIS_BUILD_DIR}/../openjdk1.8.0_${JDK8_UPDATE_VERSION}-${JVMCI_VERSION} ${TRAVIS_BUILD_DIR}/../jvmci-8;
-    fi
+- yarn install
+- node ./download-jar.js
+- export GRAAL_URL="https://github.com/oracle/graal/releases/download/vm-$GRAAL_VERSION/graalvm-ce-$GRAAL_VERSION-$GRAAL_OS-amd64.tar.gz"
+- echo $GRAAL_URL
+- curl --fail -s -S -L $GRAAL_URL | tar -xz
+- if [ $TRAVIS_OS_NAME = osx ]; then
+    export GRAAL_NATIVE_IMAGE_PATH=graalvm-ce-${GRAAL_VERSION}/Contents/Home/bin/native-image;
+  else
+    export GRAAL_NATIVE_IMAGE_PATH=graalvm-ce-${GRAAL_VERSION}/bin/native-image;
   fi
-  export JAVA_HOME=${TRAVIS_BUILD_DIR}/../jvmci-8
-  export EXTRA_JAVA_HOMES=${JAVA_HOME} # JDK8 must be placed in EXTRA_JAVA_HOME
 script:
-- echo ${JAVA_HOME}
-- echo ${EXTRA_JAVA_HOMES}
-- "${JAVA_HOME}/bin/java -version"
-- cd ${TRAVIS_BUILD_DIR}/graal && mx -v --primary-suite-path substratevm build
-- |
-  cd ${TRAVIS_BUILD_DIR}/graal/substratevm
-  mx -v native-image -H:+JNI --no-server \
-    -H:+ReportUnsupportedElementsAtRuntime \
-    -H:IncludeResourceBundles=com.google.javascript.rhino.Messages \
-    -H:IncludeResourceBundles=org.kohsuke.args4j.Messages \
-    -H:IncludeResourceBundles=org.kohsuke.args4j.spi.Messages \
-    -H:IncludeResourceBundles=com.google.javascript.jscomp.parsing.ParserConfig \
-    -H:ReflectionConfigurationFiles=${TRAVIS_BUILD_DIR}/reflection-config.json \
-    -H:IncludeResources='(externs.zip)|(.*(js|txt))' \
-    -jar ${TRAVIS_BUILD_DIR}/compiler.jar
-- mv ${TRAVIS_BUILD_DIR}/graal/substratevm/compiler ${TRAVIS_BUILD_DIR}/compiler
-- cd ${TRAVIS_BUILD_DIR}
-- "./compiler --version"
-- "./compiler --help"
-- echo "console.log('hello');" | ./compiler
-after_failure:
-- cat hs_err*
+- ${GRAAL_NATIVE_IMAGE_PATH} -H:+JNI --no-server -H:+ReportUnsupportedElementsAtRuntime
+    -H:IncludeResourceBundles=com.google.javascript.rhino.Messages
+    -H:IncludeResourceBundles=org.kohsuke.args4j.Messages
+    -H:IncludeResourceBundles=org.kohsuke.args4j.spi.Messages
+    -H:IncludeResourceBundles=com.google.javascript.jscomp.parsing.ParserConfig
+    -H:ReflectionConfigurationFiles=reflection-config.json
+    -H:IncludeResources='(externs.zip)|(.*(js|txt))'
+    -jar compiler.jar
+- ./compiler --version | grep 'Version:'
+- ./compiler --help | grep 'Basic Usage:'
+- echo "console.log('hello');" | ./compiler | grep 'console.log'
 before_deploy:
 - node prepare-publish.js
 deploy:
