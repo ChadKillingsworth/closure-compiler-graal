@@ -75,7 +75,7 @@ script:
 - cd ${TRAVIS_BUILD_DIR}
 - "./compiler --version"
 - "./compiler --help"
-- echo "console.log('hello');" | ./compiler
+- echo "[{\"src\": \"console.log('hello world');\", \"path\": \"foo.js\"}]" | ./compiler --json_streams=IN
 after_failure:
 - cat hs_err*
 before_deploy:
