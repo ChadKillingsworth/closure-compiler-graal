@@ -5,7 +5,7 @@ Public distribution of closure compiler native images
 
 Includes both of the following packages:
 
- - [google-closure-compiler-osx](https://www.npmjs.com/package/google-closure-compiler-linux)
+ - [google-closure-compiler-osx](https://www.npmjs.com/package/google-closure-compiler-osx)
     [![npm version](https://badge.fury.io/js/google-closure-compiler-osx.svg)](https://badge.fury.io/js/google-closure-compiler-osx)
    
  - [google-closure-compiler-linux](https://www.npmjs.com/package/google-closure-compiler-linux)
